@@ -7,19 +7,26 @@ import 'package:flutter_app_bloc_sample/model/Question.dart';
 
 class QuizBloc implements BlocBase {
   List<Question> _questions;
+  List<Answer> _answers;
   BuildContext _context;
 
   Answer currentAnswer;
 
-  StreamController<List<Question>> _questionsController = StreamController<List<Question>>();
-  StreamSink<List<Question>> get _inAddQuestions => _questionsController.sink;
-  Stream<List<Question>> get outQuestions => _questionsController.stream;
+  StreamController<Question> _questionsController =
+  StreamController<Question>();
+
+  StreamSink<Question> get _inAddQuestions => _questionsController.sink;
+
+  Stream<Question> get outQuestions => _questionsController.stream;
 
   StreamController _actionController = StreamController();
+
   StreamSink get requestController => _actionController.sink;
 
   StreamController<Answer> _answerController = StreamController();
+
   StreamSink<Answer> get inAnswer => _answerController.sink;
+
   Stream<Answer> get outAnswer => _answerController.stream;
 
   QuizBloc(BuildContext context) {
@@ -41,13 +48,21 @@ class QuizBloc implements BlocBase {
   }
 
   void _handleLogic(event) async {
+    if (event == null) {
+      final parsed = json.decode(questionsJson).cast<Map<String, dynamic>>();
+      _questions =
+          parsed.map<Question>((json) => Question.fromJson(json)).toList();
+      print(_questions);
 
-    final parsed = json.decode(questionsJson).cast<Map<String, dynamic>>();
-    _questions = parsed.map<Question>((json) => Question.fromJson(json)).toList();
-    print(_questions);
+      _inAddQuestions.add(_questions[0]);
+    } else if (event is Question) {
+      _questions
+          .where((q) => q.id == event.next)
+          .forEach((element) => _inAddQuestions.add(element));
 
-    _inAddQuestions.add(_questions);
+      }
   }
+
 
   final questionsJson = """
   [
@@ -134,6 +149,4 @@ class QuizBloc implements BlocBase {
   }
 ]
   """;
-
-
 }

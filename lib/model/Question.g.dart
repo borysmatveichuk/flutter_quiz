@@ -15,7 +15,9 @@ Question _$QuestionFromJson(Map<String, dynamic> json) {
           ?.map((e) =>
               e == null ? null : Answer.fromJson(e as Map<String, dynamic>))
           ?.toList())
-    ..validator = json['validator'] as String;
+    ..validator = json['validator'] as String
+    ..points = json['points'] as int
+    ..next = json['next'] as String;
 }
 
 Map<String, dynamic> _$QuestionToJson(Question instance) => <String, dynamic>{
@@ -23,7 +25,9 @@ Map<String, dynamic> _$QuestionToJson(Question instance) => <String, dynamic>{
       'question': instance.question,
       'inputType': _$InputTypeEnumMap[instance.inputType],
       'validator': instance.validator,
-      'answers': instance.answers
+      'answers': instance.answers,
+      'points': instance.points,
+      'next': instance.next
     };
 
 T _$enumDecode<T>(Map<T, dynamic> enumValues, dynamic source) {

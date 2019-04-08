@@ -10,6 +10,8 @@ class Question {
   InputType inputType;
   String validator;
   List<Answer> answers;
+  int points;
+  String next;
 
   Question({
     this.id,

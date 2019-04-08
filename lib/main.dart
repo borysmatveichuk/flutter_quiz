@@ -31,13 +31,13 @@ class CounterPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('Stream version of the Quiz App')),
       body: Center(
-        child: StreamBuilder<List<Question>>(
+        child: StreamBuilder<Question>(
             stream: bloc.outQuestions,
-            initialData: List<Question>(),
+            initialData: null,
             builder:
-                (BuildContext context, AsyncSnapshot<List<Question>> snapshot) {
-              if (snapshot.data.isNotEmpty) {
-                return buildBody(context, snapshot.data[0], bloc);
+                (BuildContext context, AsyncSnapshot<Question> snapshot) {
+              if (snapshot.data != null) {
+                return buildBody(context, snapshot.data, bloc);
               } else {
                 return buildStartBody(bloc);
               }
@@ -85,11 +85,12 @@ class CounterPage extends StatelessWidget {
     return MaterialButton(
       color: Colors.blue,
       child: Text("Next"),
-      onPressed: () => {Fluttertoast.showToast(msg: "Next question!")},
+      onPressed: () => { bloc.requestController.add(question) },
     );
   }
 
   Widget _makeBodyWithAnswers(Question question, QuizBloc bloc) {
+    Fluttertoast.showToast(msg: "question type ${question.inputType}");
     if (question.inputType == InputType.select) {
       return _makeRadioTiles(question.answers, bloc);
     } else {
