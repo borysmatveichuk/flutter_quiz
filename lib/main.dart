@@ -39,17 +39,29 @@ class CounterPage extends StatelessWidget {
               if (snapshot.data.isNotEmpty) {
                 return buildBody(context, snapshot.data[0], bloc);
               } else {
-                return Text("No data yet :(");
+                return buildStartBody(bloc);
               }
             }),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          bloc.requestController.add(null);
-        },
-        tooltip: 'Get questions',
-        child: const Icon(Icons.add),
-      ),
+    );
+  }
+
+  Widget buildStartBody(QuizBloc bloc) {
+    return Column(
+      children: <Widget>[
+        new Padding(
+          padding: new EdgeInsets.all(8.0),
+        ),
+        Text('To start Quiz press Start!'),
+        new Padding(
+          padding: new EdgeInsets.all(8.0),
+        ),
+        new MaterialButton(
+          color: Colors.blue,
+          child: Text("Start"),
+          onPressed: () => { bloc.requestController.add(null) },
+        )
+      ],
     );
   }
 
@@ -89,12 +101,12 @@ class CounterPage extends StatelessWidget {
     return Column(children: <Widget>[
       new Padding(
         padding: new EdgeInsets.all(16.0),
+        child: TextField(
+          onChanged: (text) {
+            print(text);
+          },
+        ),
       ),
-      TextField(
-        onChanged: (text) {
-          print(text);
-        },
-      )
     ]);
   }
 
