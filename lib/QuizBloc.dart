@@ -6,33 +6,35 @@ import 'package:flutter_app_bloc_sample/model/Answer.dart';
 import 'package:flutter_app_bloc_sample/model/Question.dart';
 
 class QuizBloc implements BlocBase {
-  List<Question> _questions;
-  List<Answer> _answers;
-  BuildContext _context;
 
+  List<Question> _questions;
+  int totalPoints = 0;
   Answer currentAnswer;
 
   StreamController<Question> _questionsController =
-  StreamController<Question>();
+      StreamController<Question>();
 
   StreamSink<Question> get _inAddQuestions => _questionsController.sink;
-
   Stream<Question> get outQuestions => _questionsController.stream;
 
   StreamController _actionController = StreamController();
-
   StreamSink get requestController => _actionController.sink;
 
   StreamController<Answer> _answerController = StreamController();
-
   StreamSink<Answer> get inAnswer => _answerController.sink;
-
   Stream<Answer> get outAnswer => _answerController.stream;
 
   QuizBloc(BuildContext context) {
-    _context = context;
     _questions = List<Question>();
-    _actionController.stream.listen(_handleLogic);
+    _actionController.stream.listen(_handleEvent);
+    _initQuestions();
+  }
+
+  _initQuestions() {
+    final parsed = json.decode(questionsJson).cast<Map<String, dynamic>>();
+    _questions =
+        parsed.map<Question>((json) => Question.fromJson(json)).toList();
+    _inAddQuestions.add(_questions[0]);
   }
 
   @override
@@ -40,29 +42,44 @@ class QuizBloc implements BlocBase {
     _actionController.close();
     _questionsController.close();
     _answerController.close();
-    print("dispose, unsubscribed!");
   }
 
   void handleAnswer(Answer event) {
     inAnswer.add(event);
+    currentAnswer = event;
   }
 
-  void _handleLogic(event) async {
-    if (event == null) {
-      final parsed = json.decode(questionsJson).cast<Map<String, dynamic>>();
-      _questions =
-          parsed.map<Question>((json) => Question.fromJson(json)).toList();
-      print(_questions);
+  void _handleEvent(event) async {
 
-      _inAddQuestions.add(_questions[0]);
-    } else if (event is Question) {
-      _questions
-          .where((q) => q.id == event.next)
-          .forEach((element) => _inAddQuestions.add(element));
+    // maybe another event type will
+    if (event is Question) {
+      switch (event.inputType) {
+        case InputType.text:
 
+          totalPoints += event.points;
+
+          if(event.next == null) {
+            _inAddQuestions.add(null);
+          }
+          _questions
+              .where((q) => q.id == event.next)
+              .forEach((element) => _inAddQuestions.add(element));
+          break;
+
+        case InputType.select:
+
+          totalPoints += currentAnswer.points;
+
+          if(event.next == null) {
+            _inAddQuestions.add(null);
+          }
+          _questions
+              .where((q) => q.id == currentAnswer.next)
+              .forEach((element) => _inAddQuestions.add(element));
+          break;
       }
+    }
   }
-
 
   final questionsJson = """
   [
@@ -145,7 +162,7 @@ class QuizBloc implements BlocBase {
     "id": "5",
     "question": "What are you wish?",
     "inputType": "text",
-    "point": 2
+    "points": 2
   }
 ]
   """;
