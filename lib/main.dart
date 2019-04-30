@@ -16,13 +16,13 @@ class MyApp extends StatelessWidget {
       ),
       home: BlocProvider<QuizBloc>(
         bloc: QuizBloc(context),
-        child: CounterPage(),
+        child: ContentPage(),
       ),
     );
   }
 }
 
-class CounterPage extends StatelessWidget {
+class ContentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final QuizBloc bloc = BlocProvider.of<QuizBloc>(context);
@@ -31,7 +31,7 @@ class CounterPage extends StatelessWidget {
       appBar: AppBar(title: Text('Stream version of the Quiz App')),
       body: Center(
         child: StreamBuilder<Question>(
-            stream: bloc.outQuestions,
+            stream: bloc.outQuestion,
             initialData: null,
             builder:
                 (BuildContext context, AsyncSnapshot<Question> snapshot) {
@@ -75,7 +75,7 @@ class CounterPage extends StatelessWidget {
       children: <Widget>[
         Padding(
           padding: EdgeInsets.all(16.0),
-          child: Text('Questions: ${question.question} ',
+          child: Text('Question: ${question.question} ',
               style: _getDefaultTextStyle(context)),
         ),
         Padding(
@@ -112,7 +112,7 @@ class CounterPage extends StatelessWidget {
                       child: Text("Next", style: _getDefaultTextStyle(context)),
                       onPressed: () {
                         if (question.answers.contains(bloc.currentAnswer)) {
-                          bloc.requestController.add(question);
+                          bloc.inAction.add(question);
                         } else {
                           null;
                         }
@@ -138,7 +138,7 @@ class CounterPage extends StatelessWidget {
   }
 }
 
-_getDefaultTextStyle(BuildContext context) {
+TextStyle _getDefaultTextStyle(BuildContext context) {
   return DefaultTextStyle
       .of(context)
       .style
@@ -188,7 +188,7 @@ class _stateTextInput extends State<StateTextInput> {
         child: TextFormField(
           controller: textController,
           validator: null,
-          style: _getDefaultTextStyle(context),
+          style: _getDefaultTextStyle(context).apply(color: Colors.lightGreen),
         ),
       ),
 
@@ -203,10 +203,10 @@ class _stateTextInput extends State<StateTextInput> {
               } else if (question.validator != null) {
                 RegExp regex = RegExp(question.validator);
                 if (regex.hasMatch(textController.text)) {
-                  bloc.requestController.add(question);
+                  bloc.inAction.add(question);
                 }
               } else {
-                bloc.requestController.add(question);
+                bloc.inAction.add(question);
               }
             }),
       ),

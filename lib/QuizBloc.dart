@@ -11,14 +11,12 @@ class QuizBloc implements BlocBase {
   int totalPoints = 0;
   Answer currentAnswer;
 
-  StreamController<Question> _questionsController =
-      StreamController<Question>();
-
-  StreamSink<Question> get _inAddQuestions => _questionsController.sink;
-  Stream<Question> get outQuestions => _questionsController.stream;
+  StreamController<Question> _questionController = StreamController<Question>();
+  StreamSink<Question> get _inQuestion => _questionController.sink;
+  Stream<Question> get outQuestion => _questionController.stream;
 
   StreamController _actionController = StreamController();
-  StreamSink get requestController => _actionController.sink;
+  StreamSink get inAction => _actionController.sink;
 
   StreamController<Answer> _answerController = StreamController();
   StreamSink<Answer> get inAnswer => _answerController.sink;
@@ -32,15 +30,14 @@ class QuizBloc implements BlocBase {
 
   _initQuestions() {
     final parsed = json.decode(questionsJson).cast<Map<String, dynamic>>();
-    _questions =
-        parsed.map<Question>((json) => Question.fromJson(json)).toList();
-    _inAddQuestions.add(_questions[0]);
+    _questions = parsed.map<Question>((json) => Question.fromJson(json)).toList();
+    _inQuestion.add(_questions[0]);
   }
 
   @override
   void dispose() {
     _actionController.close();
-    _questionsController.close();
+    _questionController.close();
     _answerController.close();
   }
 
@@ -59,11 +56,11 @@ class QuizBloc implements BlocBase {
           totalPoints += event.points;
 
           if(event.next == null) {
-            _inAddQuestions.add(null);
+            _inQuestion.add(null);
           }
           _questions
               .where((q) => q.id == event.next)
-              .forEach((element) => _inAddQuestions.add(element));
+              .forEach((element) => _inQuestion.add(element));
           break;
 
         case InputType.select:
@@ -71,11 +68,11 @@ class QuizBloc implements BlocBase {
           totalPoints += currentAnswer.points;
 
           if(event.next == null) {
-            _inAddQuestions.add(null);
+            _inQuestion.add(null);
           }
           _questions
               .where((q) => q.id == currentAnswer.next)
-              .forEach((element) => _inAddQuestions.add(element));
+              .forEach((element) => _inQuestion.add(element));
           break;
       }
     }
