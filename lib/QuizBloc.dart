@@ -13,6 +13,7 @@ class QuizBloc implements BlocBase {
 
   StreamController<Question> _questionController = StreamController<Question>();
   StreamSink<Question> get _inQuestion => _questionController.sink;
+  // THIS STREAM IS BROKEN ON iOS WHEN RESTART IN IDE
   Stream<Question> get outQuestion => _questionController.stream;
 
   StreamController _actionController = StreamController();
